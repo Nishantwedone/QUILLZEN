@@ -1,4 +1,4 @@
-import projectModel from "../models/project.model";
+import projectModel from "../models/project.model.js";
 
 
 
@@ -12,9 +12,17 @@ export const createProject = async ({
         throw new Error("User ID is required");
     }
 
-    const project = await projectModel.create({
-        name,
-        users: [ userId ]
-    })
+    let project;
+    try {
+        project = await projectModel.create({
+            name,
+            users: [ userId ]
+        });
+    } catch (error) {
+        if (error.code === 11000 && error.keyPattern && error.keyPattern.name) {
+            throw new Error("Project name already exists");
+        }
+        throw error;
+    }
     return project;
 }
