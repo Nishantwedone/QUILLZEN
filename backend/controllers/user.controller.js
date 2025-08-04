@@ -14,6 +14,8 @@ export const createUserController = async (req, res) => {
         const user = await userService.createUser(req.body);
 
         const token = await user.generateJWT();
+
+        delete user._doc.password; // Remove password from the response
         
         res.status(201).json({ user, token });
     }catch(error){
@@ -49,6 +51,8 @@ export const loginController = async (req, res) => {
 
         const token = await user.generateJWT();
 
+        delete user._doc.password; // Remove password from the response
+
         res.status(200).json({user, token});
     }catch(error){
         res.status(400).json({message: error.message});
@@ -74,6 +78,7 @@ export const logoutController = async (req, res) => {
     try{
 
         const token = req.cookies.token || req.headers.authorization.split(" ")[1];
+
 
         // Invalidate the token by removing it from Redis
         redisClient.set(token,'logout', 'EX', 60 * 60 * 24); // Set token with an expiration time of 1 hour
